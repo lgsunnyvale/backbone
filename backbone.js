@@ -350,7 +350,7 @@
     // Set a hash of model attributes, and sync the model to the server.
     // If the server returns an attributes hash that differs, the model's
     // state will be `set` again.
-    save: function(key, val, options) {
+    _save: function(key, val, options) {
       var attrs, current, done;
 
       // Handle both `"key", value` and `{key: value}` -style arguments.
@@ -400,6 +400,18 @@
       }
 
       return xhr;
+    },
+
+    save : function( attrs, options ) {
+      if ( this.isNew() && this.request ) {
+        var dit = this, args = arguments;
+        $.when( this.request ).always( function() {
+          Backbone.Model.prototype._save.apply( dit, args );
+        } );
+      }
+      else {
+        this.request = Backbone.Model.prototype._save.apply( this, arguments );
+      }
     },
 
     // Destroy this model on the server if it was already persisted.
